@@ -40,17 +40,19 @@
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
 	edm::Service<TFileService> tFileService;
-	m_Acceptance          = tFileService->make<TH1F>("Acceptance", "Acceptance;;number", 10, 0, 10);
-	m_h0_pt               = tFileService->make<TH1F>("h0_pt", "GenHiggs_pt;pt [GeV/c];Events", 200, 0., 800.);
-	m_h0_mass             = tFileService->make<TH1F>("h0_mass", "GenHiggs_mass; mass [GeV/c^{2}];Events", 20, 0., 200.);  
-	m_h0gg_mass           = tFileService->make<TH1F>("h0gg_mass", "gg->h;mass [GeV/c^{2}];Events", 200, 0., 500.);
-	m_Z_lep_pt            = tFileService->make<TH1F>("m_Z_lep_pt", "GenZ_lep_pt;pt [GeV/c];Events", 1000, 0., 1000.);
-	m_Z_pt                = tFileService->make<TH1F>("Z_pt", "GenZ_pt;pt [GeV/c];Events", 1000, 0., 1000.);
-	m_ele_pt              = tFileService->make<TH1F>("ele_pt", "Genele_pt;pt [GeV/c];Events", 1000, 0., 1000.);
-	m_mu_pt               = tFileService->make<TH1F>("mu_pt", "Genmu_pt;pt [GeV/c];Events", 1000, 0., 1000.);
-	m_pdgId               = tFileService->make<TH1F>("pdgId", "Gen_pdgId;pdgId;number", 100, -50, 50);
-	m_ZmassEle            = tFileService->make<TH1F>("ZMassEle", "ZMassEle;mass [GeV/c^{2}];Events", 100, 80., 100.);
-	m_ZmassMu             = tFileService->make<TH1F>("ZMassMu", "ZMassMu;mass [GeV/c^{2}];Events", 100, 80., 100.);
+	h_pdgId              = tFileService->make<TH1D>("pdgId", "",   100, -50, 50);
+	h_ndstar             = tFileService->make<TH1D>("NumDstar", "", 10, -5, 5);
+	h_nustar             = tFileService->make<TH1D>("NumUstar", "", 10, -5, 5);
+	h_mdstar             = tFileService->make<TH1D>("MassDstar", "", 2000, 0, 2000);
+	h_mustar             = tFileService->make<TH1D>("MassUstar", "", 2000, 0, 2000);
+	h_pTdstar            = tFileService->make<TH1D>("pTDstar", "", 1000, 0, 1000);
+	h_pTustar            = tFileService->make<TH1D>("pTUstar", "", 1000, 0, 1000);
+	h_etadstar           = tFileService->make<TH1D>("EtaDstar", "", 100, -5, 5);
+	h_etaustar           = tFileService->make<TH1D>("EtaUstar", "", 100, -5, 5);
+	h_phidstar           = tFileService->make<TH1D>("PhiDstar", "", 400, -4, 4);
+	h_phiustar           = tFileService->make<TH1D>("PhiUstar", "", 400, -4, 4);
+	h_dstarDecay         = tFileService->make<TH1D>("DstarDecay", "", 100, -50, 50);
+	h_ustarDecay         = tFileService->make<TH1D>("UstarDecay", "", 100, -50, 50);
 }
 
 GENSIMAnalysis::~GENSIMAnalysis()
@@ -74,46 +76,42 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	iEvent.getByLabel("genParticles", genParticles);
 
 	//Gen
-	for (reco::GenParticleCollection::const_iterator genit = genParticles->begin();
-			genit != genParticles->end();  ++genit) {
+	int ndstar_p, ndstar_m, nustar_p, nustar_m;
+	ndstar_p=ndstar_m=nustar_p=nustar_m=0;
 
-		if(genit->status()==3)                
-			m_pdgId->Fill(genit->pdgId());
+	for (reco::GenParticleCollection::const_iterator genit = genParticles->begin(); genit != genParticles->end();  ++genit) {
 
-		//Loop over Z's daughter
-		if(fabs(genit->pdgId())==23 && genit->status()==3 ){
-
-			for(unsigned int dit=0;dit<genit->numberOfDaughters();dit++){
-				if(fabs(genit->daughter(dit)->pdgId())==11 || fabs(genit->daughter(dit)->pdgId())==13){
-					m_Z_lep_pt->Fill(genit->daughter(dit)->pt());
-				}
-			}
-		}
-		//Gen Electrons
-		if(fabs(genit->pdgId())==11 && genit->status()==3){
-			m_ele_pt->Fill(genit->pt());
-			m_Acceptance->Fill(0);
-			if(genit->pt()>20. && fabs(genit->eta())<2.5){
-				m_Acceptance->Fill(1);
-			}
+		if(genit->status()==3){                
+			h_pdgId->Fill(genit->pdgId());
+			if( genit->pdgId() ==  4000001 ){ ndstar_p++; }
+			if( genit->pdgId() == -4000001 ){ ndstar_m--; }
+			if( genit->pdgId() ==  4000002 ){ nustar_p++; }
+			if( genit->pdgId() == -4000002 ){ nustar_m--; }
 		}
 
-		//Gen Muons
-		if(fabs(genit->pdgId())==13 && genit->status()==3){
-			m_mu_pt->Fill(genit->pt());
-			m_Acceptance->Fill(4);
-			if(genit->pt()>20. && fabs(genit->eta())<2.4){
-				m_Acceptance->Fill(5);
+		if(fabs(genit->pdgId())== 4000001 && genit->status()==3 ){
+			h_mdstar->Fill(genit->mass());
+			h_pTdstar->Fill(genit->pt());
+			h_etadstar->Fill(genit->eta());
+			h_phidstar->Fill(genit->phi());
+			for(unsigned int dit=0; dit<genit->numberOfDaughters();dit++){
+				h_dstarDecay->Fill(genit->daughter(dit)->pdgId());				
 			}
 		}
-
-		//Gen Higgs
-		if(fabs(genit->pdgId())==25 && genit->status()==3){
-			m_h0_pt->Fill(genit->pt());
-			m_h0_mass->Fill(genit->mass());
+		if(fabs(genit->pdgId())== 4000002 && genit->status()==3 ){
+			h_mustar->Fill(genit->mass());
+			h_pTustar->Fill(genit->pt());
+			h_etaustar->Fill(genit->eta());
+			h_phiustar->Fill(genit->phi());
+			for(unsigned int dit=0; dit<genit->numberOfDaughters();dit++){
+				h_ustarDecay->Fill(genit->daughter(dit)->pdgId());				
+			}
 		}
 	}
-
+	h_ndstar->Fill(ndstar_p);
+	h_ndstar->Fill(ndstar_m);
+	h_nustar->Fill(nustar_p);
+	h_nustar->Fill(nustar_m);
 }
 
 

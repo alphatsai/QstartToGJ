@@ -49,17 +49,20 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
 		// ----------member data ---------------------------
-		TH1D *m_Acceptance;
-		TH1D *m_Z_pt;
-		TH1D *m_h0_pt;
-		TH1D *m_h0_mass;
-		TH1D *m_h0gg_mass;
-		TH1D *m_ele_pt;
-		TH1D *m_mu_pt;
-		TH1D *m_Z_lep_pt;
-		TH1D *m_pdgId;
-		TH1D *m_ZmassMu;
-		TH1D *m_ZmassEle;
+		TH1D *h_pdgId;
+		TH1D* h_ndstar;     
+		TH1D* h_nustar;     
+		TH1D* h_mdstar;     
+		TH1D* h_mustar;     
+		TH1D* h_pTdstar;    
+		TH1D* h_pTustar;    
+		TH1D* h_etadstar;   
+		TH1D* h_etaustar;   
+		TH1D* h_phidstar;   
+		TH1D* h_phiustar;   
+		TH1D* h_dstarDecay; 
+		TH1D* h_ustarDecay; 
+
 };
 
 
