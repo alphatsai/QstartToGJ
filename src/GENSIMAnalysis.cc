@@ -39,7 +39,6 @@
 // 
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
-	edm::Service<TFileService> tFileService;
 	h_pdgId              = tFileService->make<TH1D>("pdgId", "",   100, -50, 50);
 	h_ndstar             = tFileService->make<TH1D>("NumDstar", "", 10, -5, 5);
 	h_nustar             = tFileService->make<TH1D>("NumUstar", "", 10, -5, 5);

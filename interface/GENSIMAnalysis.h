@@ -49,6 +49,8 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
 		// ----------member data ---------------------------
+		edm::Service<TFileService> tFileService;
+
 		TH1D *h_pdgId;
 		TH1D* h_ndstar;     
 		TH1D* h_nustar;     
