@@ -41,7 +41,8 @@ from inputFiles_cfi import * #FileNames
 process.source = cms.Source("PoolSource",
     #skipEvents = cms.untracked.uint32(0),
     #firstEvent = cms.untracked.uint32(1),
-    fileNames = cms.untracked.vstring(FileNames_QstarM500Test)
+    #fileNames = cms.untracked.vstring(FileNames_QstarM500Test)
+    fileNames = cms.untracked.vstring(FileNames_QstarM500_100K)
 )
 
 ### output

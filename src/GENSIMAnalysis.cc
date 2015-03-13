@@ -40,8 +40,8 @@
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
 	h_pdgId              = tFileService->make<TH1D>("pdgId", "",   100, -50, 50);
-	h_ndstar             = tFileService->make<TH1D>("NumDstar", "", 20, -10, 10);
-	h_nustar             = tFileService->make<TH1D>("NumUstar", "", 20, -10, 10);
+	h_ndstar             = tFileService->make<TH1D>("NumDstar", "", 50, -25, 25);
+	h_nustar             = tFileService->make<TH1D>("NumUstar", "", 50, -25, 25);
 	h_mdstar             = tFileService->make<TH1D>("MassDstar", "", 2000, 0, 2000);
 	h_mustar             = tFileService->make<TH1D>("MassUstar", "", 2000, 0, 2000);
 	h_pTdstar            = tFileService->make<TH1D>("pTDstar", "", 1000, 0, 1000);
@@ -73,16 +73,16 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	iEvent.getByLabel("genParticles", genParticles);
 
 	//Gen
-	int ndstar_p, ndstar_m, nustar_p, nustar_m;
-	ndstar_p=ndstar_m=nustar_p=nustar_m=0;
+	int ndstar_p, ndstar_a, nustar_p, nustar_a;
+	ndstar_p=ndstar_a=nustar_p=nustar_a=0;
 
 	for (reco::GenParticleCollection::const_iterator genit = genParticles->begin(); genit != genParticles->end();  ++genit) {
 		// pythia only status 1
 		h_pdgId->Fill(genit->pdgId());
 		if( genit->pdgId() ==  4000001 ){ ndstar_p++; }
-		if( genit->pdgId() == -4000001 ){ ndstar_m--; }
+		if( genit->pdgId() == -4000001 ){ ndstar_a--; }
 		if( genit->pdgId() ==  4000002 ){ nustar_p++; }
-		if( genit->pdgId() == -4000002 ){ nustar_m--; }
+		if( genit->pdgId() == -4000002 ){ nustar_a--; }
 
 		if(fabs(genit->pdgId())== 4000001 ){
 			h_mdstar->Fill(genit->mass());
@@ -104,9 +104,9 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		}
 	}
 	if( ndstar_p != 0 ) h_ndstar->Fill(ndstar_p);
-	if( ndstar_m != 0 ) h_ndstar->Fill(ndstar_m);
+	if( ndstar_a != 0 ) h_ndstar->Fill(ndstar_a);
 	if( nustar_p != 0 ) h_nustar->Fill(nustar_p);
-	if( nustar_m != 0 ) h_nustar->Fill(nustar_m);
+	if( nustar_a != 0 ) h_nustar->Fill(nustar_a);
 }
 
 
