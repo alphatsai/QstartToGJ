@@ -51,7 +51,9 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		// ----------member data ---------------------------
 		edm::Service<TFileService> tFileService;
 
-		TH1D *h_pdgId;
+		TH1D* h_numEvt;
+		TH1D* h_nQstar;
+		TH1D* h_pdgId;
 		TH1D* h_ndstar;     
 		TH1D* h_nustar;     
 		TH1D* h_mdstar;     
@@ -63,7 +65,11 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		TH1D* h_phidstar;   
 		TH1D* h_phiustar;   
 		TH1D* h_dstarDecay; 
-		TH1D* h_ustarDecay; 
+		TH1D* h_ustarDecay;
+		TH1D* h_dstarStatus; 
+		TH1D* h_ustarStatus; 
+		TH1D* h_dstarStatus_phi0; 
+		TH1D* h_ustarStatus_phi0; 
 
 };
 

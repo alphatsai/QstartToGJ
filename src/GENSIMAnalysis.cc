@@ -39,6 +39,8 @@
 // 
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
+	h_numEvt             = tFileService->make<TH1D>("NumEvt", "",  1, 1, 2);
+	h_nQstar             = tFileService->make<TH1D>("NumQstar", "", 50, -25, 25);
 	h_pdgId              = tFileService->make<TH1D>("pdgId", "",   100, -50, 50);
 	h_ndstar             = tFileService->make<TH1D>("NumDstar", "", 50, -25, 25);
 	h_nustar             = tFileService->make<TH1D>("NumUstar", "", 50, -25, 25);
@@ -52,6 +54,10 @@ GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 	h_phiustar           = tFileService->make<TH1D>("PhiUstar", "", 400, -4, 4);
 	h_dstarDecay         = tFileService->make<TH1D>("DstarDecay", "", 100, -50, 50);
 	h_ustarDecay         = tFileService->make<TH1D>("UstarDecay", "", 100, -50, 50);
+	h_dstarStatus        = tFileService->make<TH1D>("DstarStatus", "", 600, -300, 300);
+	h_ustarStatus        = tFileService->make<TH1D>("UstarStatus", "", 600, -300, 300);
+	h_dstarStatus_phi0   = tFileService->make<TH1D>("DstarStatus_phi0", "", 600, -300, 300);
+	h_ustarStatus_phi0   = tFileService->make<TH1D>("UstarStatus_phi0", "", 600, -300, 300);
 }
 
 GENSIMAnalysis::~GENSIMAnalysis()
@@ -73,22 +79,23 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	iEvent.getByLabel("genParticles", genParticles);
 
 	//Gen
-	int ndstar_p, ndstar_a, nustar_p, nustar_a;
-	ndstar_p=ndstar_a=nustar_p=nustar_a=0;
+	int nQstar, ndstar_p, ndstar_a, nustar_p, nustar_a;
+	nQstar=ndstar_p=ndstar_a=nustar_p=nustar_a=0;
 
 	for (reco::GenParticleCollection::const_iterator genit = genParticles->begin(); genit != genParticles->end();  ++genit) {
-		// pythia only status 1
 		h_pdgId->Fill(genit->pdgId());
-		if( genit->pdgId() ==  4000001 ){ ndstar_p++; }
-		if( genit->pdgId() == -4000001 ){ ndstar_a--; }
-		if( genit->pdgId() ==  4000002 ){ nustar_p++; }
-		if( genit->pdgId() == -4000002 ){ nustar_a--; }
+		if( genit->pdgId() ==  4000001 ){ ndstar_p++; nQstar++; }
+		if( genit->pdgId() == -4000001 ){ ndstar_a--; nQstar++; }
+		if( genit->pdgId() ==  4000002 ){ nustar_p++; nQstar++; }
+		if( genit->pdgId() == -4000002 ){ nustar_a--; nQstar++; }
 
 		if(fabs(genit->pdgId())== 4000001 ){
 			h_mdstar->Fill(genit->mass());
 			h_pTdstar->Fill(genit->pt());
 			h_etadstar->Fill(genit->eta());
 			h_phidstar->Fill(genit->phi());
+			h_dstarStatus->Fill(genit->status());
+			if( genit->phi() == 0 ) h_dstarStatus_phi0->Fill(genit->status());
 			for(unsigned int dit=0; dit<genit->numberOfDaughters();dit++){
 				h_dstarDecay->Fill(genit->daughter(dit)->pdgId());				
 			}
@@ -98,6 +105,8 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 			h_pTustar->Fill(genit->pt());
 			h_etaustar->Fill(genit->eta());
 			h_phiustar->Fill(genit->phi());
+			h_ustarStatus->Fill(genit->status());
+			if( genit->phi() == 0 ) h_ustarStatus_phi0->Fill(genit->status());
 			for(unsigned int dit=0; dit<genit->numberOfDaughters();dit++){
 				h_ustarDecay->Fill(genit->daughter(dit)->pdgId());				
 			}
@@ -107,6 +116,8 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	if( ndstar_a != 0 ) h_ndstar->Fill(ndstar_a);
 	if( nustar_p != 0 ) h_nustar->Fill(nustar_p);
 	if( nustar_a != 0 ) h_nustar->Fill(nustar_a);
+	h_nQstar->Fill(nQstar);	
+	h_numEvt->Fill(1);
 }
 
 
