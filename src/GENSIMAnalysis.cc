@@ -168,6 +168,7 @@ void GENSIMAnalysis::beginJob()
 // ------------ method called once each job just after ending the event loop  ------------
 void GENSIMAnalysis::endJob() 
 {
+	genLists.close();	
 }
 
 // ------------ method called when starting to processes a run  ------------
