@@ -10,7 +10,13 @@
 
 // system include files
 #include <memory>
-#include <cmath>                                                   
+#include <iostream>
+#include <cmath>
+#include <ctime>
+#include <fstream>
+#include <assert.h>
+#include <vector>
+#include <map>
 
 // user include files
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -49,6 +55,10 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
 		// ----------member data ---------------------------
+		int numEvts_;
+		int printEvts_;
+
+		std::ofstream genLists;
 		edm::Service<TFileService> tFileService;
 
 		TH1D* h_numEvt;

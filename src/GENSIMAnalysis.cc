@@ -39,25 +39,30 @@
 // 
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
-	h_numEvt             = tFileService->make<TH1D>("NumEvt", "",  1, 1, 2);
-	h_nQstar             = tFileService->make<TH1D>("NumQstar", "", 50, -25, 25);
-	h_pdgId              = tFileService->make<TH1D>("pdgId", "",   100, -50, 50);
-	h_ndstar             = tFileService->make<TH1D>("NumDstar", "", 50, -25, 25);
-	h_nustar             = tFileService->make<TH1D>("NumUstar", "", 50, -25, 25);
-	h_mdstar             = tFileService->make<TH1D>("MassDstar", "", 2000, 0, 2000);
-	h_mustar             = tFileService->make<TH1D>("MassUstar", "", 2000, 0, 2000);
-	h_pTdstar            = tFileService->make<TH1D>("pTDstar", "", 1000, 0, 1000);
-	h_pTustar            = tFileService->make<TH1D>("pTUstar", "", 1000, 0, 1000);
-	h_etadstar           = tFileService->make<TH1D>("EtaDstar", "", 100, -5, 5);
-	h_etaustar           = tFileService->make<TH1D>("EtaUstar", "", 100, -5, 5);
-	h_phidstar           = tFileService->make<TH1D>("PhiDstar", "", 400, -4, 4);
-	h_phiustar           = tFileService->make<TH1D>("PhiUstar", "", 400, -4, 4);
-	h_dstarDecay         = tFileService->make<TH1D>("DstarDecay", "", 100, -50, 50);
-	h_ustarDecay         = tFileService->make<TH1D>("UstarDecay", "", 100, -50, 50);
-	h_dstarStatus        = tFileService->make<TH1D>("DstarStatus", "", 600, -300, 300);
-	h_ustarStatus        = tFileService->make<TH1D>("UstarStatus", "", 600, -300, 300);
-	h_dstarStatus_phi0   = tFileService->make<TH1D>("DstarStatus_phi0", "", 600, -300, 300);
-	h_ustarStatus_phi0   = tFileService->make<TH1D>("UstarStatus_phi0", "", 600, -300, 300);
+	numEvts_=0;
+	printEvts_=2;
+
+	genLists.open ("genLists.txt", std::ofstream::out | std::ofstream::app);
+
+	h_numEvt           = tFileService->make<TH1D>("Num_Evt", "",  1, 1, 2);
+	h_pdgId            = tFileService->make<TH1D>("PdgId", "",   100, -50, 50);
+	h_nQstar           = tFileService->make<TH1D>("Num_Qstar", "", 50, -25, 25);
+	h_ndstar           = tFileService->make<TH1D>("Num_Dstar", "", 50, -25, 25);
+	h_nustar           = tFileService->make<TH1D>("Num_Ustar", "", 50, -25, 25);
+	h_mdstar           = tFileService->make<TH1D>("Dstar_Mass", "", 2000, 0, 2000);
+	h_mustar           = tFileService->make<TH1D>("Ustar_Mass", "", 2000, 0, 2000);
+	h_pTdstar          = tFileService->make<TH1D>("Dstar_pT", "", 1000, 0, 1000);
+	h_pTustar          = tFileService->make<TH1D>("Ustar_pT", "", 1000, 0, 1000);
+	h_etadstar         = tFileService->make<TH1D>("Dstar_Eta", "", 100, -5, 5);
+	h_etaustar         = tFileService->make<TH1D>("Ustar_Eta", "", 100, -5, 5);
+	h_phidstar         = tFileService->make<TH1D>("Dstar_Phi", "", 400, -4, 4);
+	h_phiustar         = tFileService->make<TH1D>("Ustar_Phi", "", 400, -4, 4);
+	h_dstarDecay       = tFileService->make<TH1D>("Dstar_Decay", "", 100, -50, 50);
+	h_ustarDecay       = tFileService->make<TH1D>("Ustar_Decay", "", 100, -50, 50);
+	h_dstarStatus      = tFileService->make<TH1D>("Dstar_Status", "", 600, -300, 300);
+	h_ustarStatus      = tFileService->make<TH1D>("Ustar_Status", "", 600, -300, 300);
+	h_dstarStatus_phi0 = tFileService->make<TH1D>("Dstar_StatusInPhi0", "", 600, -300, 300);
+	h_ustarStatus_phi0 = tFileService->make<TH1D>("Ustar_StatusInPhi0", "", 600, -300, 300);
 }
 
 GENSIMAnalysis::~GENSIMAnalysis()
@@ -74,6 +79,7 @@ GENSIMAnalysis::~GENSIMAnalysis()
 void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 	using namespace edm;
+	using namespace std;
 
 	edm::Handle<std::vector<reco::GenParticle>> genParticles;
 	iEvent.getByLabel("genParticles", genParticles);
@@ -82,33 +88,65 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	int nQstar, ndstar_p, ndstar_a, nustar_p, nustar_a;
 	nQstar=ndstar_p=ndstar_a=nustar_p=nustar_a=0;
 
-	for (reco::GenParticleCollection::const_iterator genit = genParticles->begin(); genit != genParticles->end();  ++genit) {
-		h_pdgId->Fill(genit->pdgId());
-		if( genit->pdgId() ==  4000001 ){ ndstar_p++; nQstar++; }
-		if( genit->pdgId() == -4000001 ){ ndstar_a--; nQstar++; }
-		if( genit->pdgId() ==  4000002 ){ nustar_p++; nQstar++; }
-		if( genit->pdgId() == -4000002 ){ nustar_a--; nQstar++; }
-
-		if(fabs(genit->pdgId())== 4000001 ){
-			h_mdstar->Fill(genit->mass());
-			h_pTdstar->Fill(genit->pt());
-			h_etadstar->Fill(genit->eta());
-			h_phidstar->Fill(genit->phi());
-			h_dstarStatus->Fill(genit->status());
-			if( genit->phi() == 0 ) h_dstarStatus_phi0->Fill(genit->status());
-			for(unsigned int dit=0; dit<genit->numberOfDaughters();dit++){
-				h_dstarDecay->Fill(genit->daughter(dit)->pdgId());				
+	if( numEvts_ <= printEvts_ ){ 
+		genLists<<"\n=========================================="<<endl;	
+		genLists<<"Event: "<<numEvts_<<endl;	
+		genLists<<"PdgID\t"
+			<<"Status\t"
+			<<"Mother 0\t"
+			<<"Mother 1\t"
+			<<"# of Daughters"
+			<<endl;	
+	}
+	for (reco::GenParticleCollection::const_iterator itGen=genParticles->begin(); itGen!=genParticles->end(); ++itGen){
+		// Print out particel decay lists
+		if( numEvts_ <= printEvts_ ){
+			genLists<<"\n"<<itGen->pdgId()
+				<<"\t"<<itGen->status()
+				<<"\t"<<itGen->mother(0)->pdgId()
+				<<"\t"<<itGen->mother(1)->pdgId()
+				<<"\t"<<itGen->numberOfDaughters()
+				<<endl;	
+			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
+				genLists<<"|"<<endl;
+				if( iDa < (itGen->numberOfDaughters()-1)){ 
+					genLists<<"|-> "<<itGen->daughter(iDa)->pdgId()
+						<<"\t"	<<itGen->daughter(iDa)->status()
+						<<endl;
+				}else{ 
+					genLists<<"`-> "<<itGen->daughter(iDa)->pdgId()
+						<<"\t"	<<itGen->daughter(iDa)->status()
+						<<endl;
+				}
 			}
 		}
-		if(fabs(genit->pdgId())== 4000002 ){
-			h_mustar->Fill(genit->mass());
-			h_pTustar->Fill(genit->pt());
-			h_etaustar->Fill(genit->eta());
-			h_phiustar->Fill(genit->phi());
-			h_ustarStatus->Fill(genit->status());
-			if( genit->phi() == 0 ) h_ustarStatus_phi0->Fill(genit->status());
-			for(unsigned int dit=0; dit<genit->numberOfDaughters();dit++){
-				h_ustarDecay->Fill(genit->daughter(dit)->pdgId());				
+
+		h_pdgId->Fill(itGen->pdgId());
+		if( itGen->pdgId() ==  4000001 ){ ndstar_p++; nQstar++; }
+		if( itGen->pdgId() == -4000001 ){ ndstar_a--; nQstar++; }
+		if( itGen->pdgId() ==  4000002 ){ nustar_p++; nQstar++; }
+		if( itGen->pdgId() == -4000002 ){ nustar_a--; nQstar++; }
+
+		if(fabs(itGen->pdgId())== 4000001 ){
+			h_mdstar->Fill(itGen->mass());
+			h_pTdstar->Fill(itGen->pt());
+			h_etadstar->Fill(itGen->eta());
+			h_phidstar->Fill(itGen->phi());
+			h_dstarStatus->Fill(itGen->status());
+			if( itGen->phi() == 0 ) h_dstarStatus_phi0->Fill(itGen->status());
+			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
+				h_dstarDecay->Fill(itGen->daughter(iDa)->pdgId());				
+			}
+		}
+		if(fabs(itGen->pdgId())== 4000002 ){
+			h_mustar->Fill(itGen->mass());
+			h_pTustar->Fill(itGen->pt());
+			h_etaustar->Fill(itGen->eta());
+			h_phiustar->Fill(itGen->phi());
+			h_ustarStatus->Fill(itGen->status());
+			if( itGen->phi() == 0 ) h_ustarStatus_phi0->Fill(itGen->status());
+			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
+				h_ustarDecay->Fill(itGen->daughter(iDa)->pdgId());				
 			}
 		}
 	}
@@ -118,6 +156,7 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	if( nustar_a != 0 ) h_nustar->Fill(nustar_a);
 	h_nQstar->Fill(nQstar);	
 	h_numEvt->Fill(1);
+	numEvts_++;
 }
 
 
