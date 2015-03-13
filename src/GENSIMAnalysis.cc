@@ -138,12 +138,12 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		}
 		//** Fill histogram
 		h_pdgId->Fill(itGen->pdgId());
-		if( itGen->pdgId() ==  4000001 ){ ndstar_p++; nQstar++; }
-		if( itGen->pdgId() == -4000001 ){ ndstar_a--; nQstar++; }
-		if( itGen->pdgId() ==  4000002 ){ nustar_p++; nQstar++; }
-		if( itGen->pdgId() == -4000002 ){ nustar_a--; nQstar++; }
+		if( itGen->pdgId() ==  4000001 && itGen->status() == 62 ){ ndstar_p++; nQstar++; }
+		if( itGen->pdgId() == -4000001 && itGen->status() == 62 ){ ndstar_a--; nQstar++; }
+		if( itGen->pdgId() ==  4000002 && itGen->status() == 62 ){ nustar_p++; nQstar++; }
+		if( itGen->pdgId() == -4000002 && itGen->status() == 62 ){ nustar_a--; nQstar++; }
 
-		if(fabs(itGen->pdgId())== 4000001 ){
+		if(fabs(itGen->pdgId())== 4000001 && itGen->status() == 62 ){
 			h_mdstar->Fill(itGen->mass());
 			h_pTdstar->Fill(itGen->pt());
 			h_etadstar->Fill(itGen->eta());
@@ -154,7 +154,7 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 				h_dstarDecay->Fill(itGen->daughter(iDa)->pdgId());				
 			}
 		}
-		if(fabs(itGen->pdgId())== 4000002 ){
+		if(fabs(itGen->pdgId())== 4000002 && itGen->status() == 62 ){
 			h_mustar->Fill(itGen->mass());
 			h_pTustar->Fill(itGen->pt());
 			h_etaustar->Fill(itGen->eta());
