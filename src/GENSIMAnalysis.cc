@@ -93,20 +93,28 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		genLists<<"Event: "<<numEvts_<<endl;	
 		genLists<<"PdgID\t"
 			<<"Status\t"
-			<<"Mother 0\t"
-			<<"Mother 1\t"
-			<<"# of Daughters"
+			<<"Mother0\t"
+			<<"Mother1\t"
+			<<"#Daughters"
 			<<endl;	
 	}
 	for (reco::GenParticleCollection::const_iterator itGen=genParticles->begin(); itGen!=genParticles->end(); ++itGen){
 		// Print out particel decay lists
 		if( numEvts_ <= printEvts_ ){
-			genLists<<"\n"<<itGen->pdgId()
-				<<"\t"<<itGen->status()
-				<<"\t"<<itGen->mother(0)->pdgId()
-				<<"\t"<<itGen->mother(1)->pdgId()
-				<<"\t"<<itGen->numberOfDaughters()
-				<<endl;	
+			genLists<<"\n"<<itGen->pdgId();
+			genLists<<"\t"<<itGen->status();
+			if( itGen->numberOfDaughters()==1 ){ 
+				genLists<<"\t"<<itGen->mother(0)->pdgId();
+				genLists<<"\tNULL";
+			}else if( itGen->numberOfDaughters()>1 ){
+				genLists<<"\t"<<itGen->mother(0)->pdgId();
+				genLists<<"\t"<<itGen->mother(1)->pdgId();
+			}else{
+				genLists<<"\tNULL";
+				genLists<<"\tNULL";
+			}
+			genLists<<"\t"<<itGen->numberOfDaughters();
+			genLists<<endl;	
 			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
 				genLists<<"|"<<endl;
 				if( iDa < (itGen->numberOfDaughters()-1)){ 
