@@ -42,7 +42,8 @@ GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 	numEvts_=0;
 	printEvts_=2;
 
-	genLists.open ("genLists.txt", std::ofstream::out | std::ofstream::app);
+	//genLists.open ("genLists.txt", std::ofstream::out | std::ofstream::app);
+	genLists.open ("genLists.txt", std::ofstream::out );
 
 	h_numEvt           = tFileService->make<TH1D>("Num_Evt", "",  1, 1, 2);
 	h_pdgId            = tFileService->make<TH1D>("PdgId", "",   100, -50, 50);
@@ -81,54 +82,61 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	using namespace edm;
 	using namespace std;
 
+	//Handle objects
 	edm::Handle<std::vector<reco::GenParticle>> genParticles;
 	iEvent.getByLabel("genParticles", genParticles);
 
-	//Gen
 	int nQstar, ndstar_p, ndstar_a, nustar_p, nustar_a;
 	nQstar=ndstar_p=ndstar_a=nustar_p=nustar_a=0;
 
 	if( numEvts_ <= printEvts_ ){ 
 		genLists<<"\n=========================================="<<endl;	
 		genLists<<"Event: "<<numEvts_<<endl;	
-		genLists<<"PdgID\t"
-			<<"Status\t"
-			<<"Mother0\t"
-			<<"Mother1\t"
-			<<"#Daughters"
-			<<endl;	
 	}
 	for (reco::GenParticleCollection::const_iterator itGen=genParticles->begin(); itGen!=genParticles->end(); ++itGen){
-		// Print out particel decay lists
+		//** Print out particel decay lists
 		if( numEvts_ <= printEvts_ ){
-			genLists<<"\n"<<itGen->pdgId();
+			genLists<<"\n\t\t"
+				<<"PdgID\t"
+				<<"Status\t"
+				<<"Mother0\t"
+				<<"Mother1\t"
+				<<"#Daughters"
+				<<endl;
+			//PdgID	
+			genLists<<"Mother\t\t"<<itGen->pdgId();
+			//Status	
 			genLists<<"\t"<<itGen->status();
-			if( itGen->numberOfDaughters()==1 ){ 
+			//Mother0 and Mother1
+			if( itGen->numberOfMothers()==1 ){ 
 				genLists<<"\t"<<itGen->mother(0)->pdgId();
 				genLists<<"\tNULL";
-			}else if( itGen->numberOfDaughters()>1 ){
+			}else if( itGen->numberOfMothers()>1 ){
 				genLists<<"\t"<<itGen->mother(0)->pdgId();
 				genLists<<"\t"<<itGen->mother(1)->pdgId();
 			}else{
 				genLists<<"\tNULL";
 				genLists<<"\tNULL";
 			}
+			//#Daughters
 			genLists<<"\t"<<itGen->numberOfDaughters();
-			genLists<<endl;	
+			genLists<<endl;
+			// Daughter paticles	
 			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
-				genLists<<"|"<<endl;
 				if( iDa < (itGen->numberOfDaughters()-1)){ 
-					genLists<<"|-> "<<itGen->daughter(iDa)->pdgId()
+					genLists<<"Daughter"<<iDa<<"\t"
+						<<"|-> "<<itGen->daughter(iDa)->pdgId()
 						<<"\t"	<<itGen->daughter(iDa)->status()
 						<<endl;
 				}else{ 
-					genLists<<"`-> "<<itGen->daughter(iDa)->pdgId()
+					genLists<<"Daughter"<<iDa<<"\t"
+						<<"`-> "<<itGen->daughter(iDa)->pdgId()
 						<<"\t"	<<itGen->daughter(iDa)->status()
 						<<endl;
 				}
 			}
 		}
-
+		//** Fill histogram
 		h_pdgId->Fill(itGen->pdgId());
 		if( itGen->pdgId() ==  4000001 ){ ndstar_p++; nQstar++; }
 		if( itGen->pdgId() == -4000001 ){ ndstar_a--; nQstar++; }
