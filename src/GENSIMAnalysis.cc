@@ -62,8 +62,6 @@ GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 	h_ustarDecay       = tFileService->make<TH1D>("Ustar_Decay", "", 100, -50, 50);
 	h_dstarStatus      = tFileService->make<TH1D>("Dstar_Status", "", 600, -300, 300);
 	h_ustarStatus      = tFileService->make<TH1D>("Ustar_Status", "", 600, -300, 300);
-	h_dstarStatus_phi0 = tFileService->make<TH1D>("Dstar_StatusInPhi0", "", 600, -300, 300);
-	h_ustarStatus_phi0 = tFileService->make<TH1D>("Ustar_StatusInPhi0", "", 600, -300, 300);
 }
 
 GENSIMAnalysis::~GENSIMAnalysis()
@@ -149,7 +147,6 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 			h_etadstar->Fill(itGen->eta());
 			h_phidstar->Fill(itGen->phi());
 			h_dstarStatus->Fill(itGen->status());
-			if( itGen->phi() == 0 ) h_dstarStatus_phi0->Fill(itGen->status());
 			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
 				h_dstarDecay->Fill(itGen->daughter(iDa)->pdgId());				
 			}
@@ -160,7 +157,6 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 			h_etaustar->Fill(itGen->eta());
 			h_phiustar->Fill(itGen->phi());
 			h_ustarStatus->Fill(itGen->status());
-			if( itGen->phi() == 0 ) h_ustarStatus_phi0->Fill(itGen->status());
 			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
 				h_ustarDecay->Fill(itGen->daughter(iDa)->pdgId());				
 			}

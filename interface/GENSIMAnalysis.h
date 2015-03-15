@@ -78,8 +78,6 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		TH1D* h_ustarDecay;
 		TH1D* h_dstarStatus; 
 		TH1D* h_ustarStatus; 
-		TH1D* h_dstarStatus_phi0; 
-		TH1D* h_ustarStatus_phi0; 
 
 };
 
