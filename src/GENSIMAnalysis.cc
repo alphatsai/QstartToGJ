@@ -53,7 +53,7 @@ void GENSIMAnalysis::beginJob()
 
 	h_numEvt           = tFileService->make<TH1D>("Num_Evt", "",  1, 1, 2);
 	h_pdgId            = tFileService->make<TH1D>("PdgId", "",   100, -50, 50);
-	h_nQstar           = tFileService->make<TH1D>("Num_Qstar", "", 50, -25, 25);
+	h_nQstar           = tFileService->make<TH1D>("Num_Qstar", "", 50,   0, 50);
 	h_ndstar           = tFileService->make<TH1D>("Num_Dstar", "", 50, -25, 25);
 	h_nustar           = tFileService->make<TH1D>("Num_Ustar", "", 50, -25, 25);
 	h_mdstar           = tFileService->make<TH1D>("Dstar_Mass", "", 2000, 0, 2000);
