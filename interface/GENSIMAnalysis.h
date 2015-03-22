@@ -17,7 +17,7 @@
 #include <assert.h>
 #include <vector>
 #include <map>
-
+#include <stdio.h>
 // user include files
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -65,7 +65,7 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 
 		int numEvts_;
 
-		std::ofstream genLists;
+		FILE* genLists; 
 		edm::Service<TFileService> tFileService;
 
 		TH1D* h_numEvt;

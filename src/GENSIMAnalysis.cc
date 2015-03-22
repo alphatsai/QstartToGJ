@@ -49,7 +49,7 @@ void GENSIMAnalysis::beginJob()
 {
 	std::cout<<"GENSIMAnalysis beginJob()..."<<std::endl;
 	numEvts_=0;
-	genLists.open ("genLists.txt", std::ofstream::out );
+	genLists = fopen("genLists.txt","w");
 
 	h_numEvt           = tFileService->make<TH1D>("Num_Evt", "",  1, 1, 2);
 	h_pdgId            = tFileService->make<TH1D>("PdgId", "",   100, -50, 50);
@@ -118,51 +118,41 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	nQstar=ndstar_p=ndstar_a=nustar_p=nustar_a=0;
 
 	if( numEvts_ <= numEventListsPrint_ ){ 
-		genLists<<"\n=========================================="<<endl;	
-		genLists<<"Event: "<<numEvts_<<endl;	
+		fprintf(genLists, "\nEvent: %d\n", numEvts_);	
+		fprintf(genLists, "--------------------------------------------------------------------------------");	
 	}
+	float iGen=0;
 	for (reco::GenParticleCollection::const_iterator itGen=genParticles->begin(); itGen!=genParticles->end(); ++itGen){
 		//** Print out particel decay lists
 		if( numEvts_ <= numEventListsPrint_ ){
-			genLists<<"\n\t\t"
-				<<"PdgID\t"
-				<<"Status\t"
-				<<"Mother0\t"
-				<<"Mother1\t"
-				<<"#Daughters"
-				<<endl;
-			//PdgID	
-			genLists<<"Mother\t\t"<<itGen->pdgId();
-			//Status	
-			genLists<<"\t"<<itGen->status();
-			//Mother0 and Mother1
-			if( itGen->numberOfMothers()==1 ){ 
-				genLists<<"\t"<<itGen->mother(0)->pdgId();
-				genLists<<"\tNULL";
-			}else if( itGen->numberOfMothers()>1 ){
-				genLists<<"\t"<<itGen->mother(0)->pdgId();
-				genLists<<"\t"<<itGen->mother(1)->pdgId();
-			}else{
-				genLists<<"\tNULL";
-				genLists<<"\tNULL";
-			}
-			//#Daughters
-			genLists<<"\t"<<itGen->numberOfDaughters();
-			genLists<<endl;
+			float pT  = itGen->pt();
+			float eta  = itGen->eta();
+			float phi  = itGen->phi();
+			float pdgId  = itGen->pdgId();
+			float status = itGen->status();
+			float numDau = itGen->numberOfDaughters();
+			float m0, m1; m0=m1=-1;
+			if( itGen->numberOfMothers() == 1 ){ 
+				m0=itGen->mother(0)->pdgId(); 
+			}else if( itGen->numberOfMothers() > 1 ){ 
+				m0=itGen->mother(0)->pdgId(); 
+				m1=itGen->mother(1)->pdgId(); 
+			}	
+			fprintf(genLists, "\n%5s\t%8s%8s%3s%7s%8s%7s%2s%8s%11s%8s%2s\n", "idx", "ID", "Stat", "|", "M0", "M1", "nDa", "|", "pT", "eta", "phi", "|");	
+			fprintf(genLists, "%5.0f\t%8.0f%8.0f%3s%7.0f%8.0f%7.0f%2s%8.3f%11.3f%8.3f%2s\n", iGen, pdgId, status, "|", m0, m1, numDau, "|", pT, eta, phi, "|");
+			fprintf(genLists, "%5s\n", ",  " );	
 			// Daughter paticles	
 			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
+				float dauId     = itGen->daughter(iDa)->pdgId();
+				float dauStatus = itGen->daughter(iDa)->status();
 				if( iDa < (itGen->numberOfDaughters()-1)){ 
-					genLists<<"Daughter"<<iDa<<"\t"
-						<<"|-> "<<itGen->daughter(iDa)->pdgId()
-						<<"\t"	<<itGen->daughter(iDa)->status()
-						<<endl;
+					fprintf(genLists, "%5s\t%8.0f%8.0f%3s\n", "|->", dauId, dauStatus, "|");
 				}else{ 
-					genLists<<"Daughter"<<iDa<<"\t"
-						<<"`-> "<<itGen->daughter(iDa)->pdgId()
-						<<"\t"	<<itGen->daughter(iDa)->status()
-						<<endl;
+					fprintf(genLists, "%5s\t%8.0f%8.0f%3s\n", "`->", dauId, dauStatus, "|");
 				}
 			}
+			fprintf(genLists, "--------------------------------------------------------------------------------");	
+			iGen++;
 		}
 		//** Fill histogram
 		h_pdgId->Fill(itGen->pdgId());
@@ -193,7 +183,8 @@ GENSIMAnalysis::~GENSIMAnalysis()
 // ------------ method called once each job just after ending the event loop  ------------
 void GENSIMAnalysis::endJob() 
 {
-	genLists.close();	
+	//genLists.close();
+	fclose(genLists);	
 }
 
 // ------------ method called when starting to processes a run  ------------
