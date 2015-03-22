@@ -27,6 +27,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"              
 #include "CommonTools/UtilAlgos/interface/TFileService.h"          
 
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"    
 //ROOT
 #include <TFile.h>                                                
 #include <TTree.h>                                                
@@ -53,10 +54,16 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 		virtual void endRun(edm::Run const&, edm::EventSetup const&);
 		virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 		virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
+	
+		void fillUstarInfo( const reco::GenParticle* gen, int& nustar_p, int& nustar_a, int& nQstar);	
+		void fillDstarInfo( const reco::GenParticle* gen, int& ndstar_p, int& ndstar_a, int& nQstar);
 
 		// ----------member data ---------------------------
+		edm::InputTag genInfoLabel_;
+		int selectQstarStatus_;
+		int numEventListsPrint_;
+
 		int numEvts_;
-		int printEvts_;
 
 		std::ofstream genLists;
 		edm::Service<TFileService> tFileService;

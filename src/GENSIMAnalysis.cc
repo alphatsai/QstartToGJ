@@ -39,10 +39,16 @@
 // 
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
-	numEvts_=0;
-	printEvts_=2;
+	std::cout<<"GENSIMAnalysis constructor..."<<std::endl;
+	genInfoLabel_ = iConfig.getParameter<edm::InputTag>("genInfoLabel");	
+	selectQstarStatus_ = iConfig.getParameter<int>("selectQstarStatus");	
+	numEventListsPrint_ = iConfig.getParameter<int>("numEventListsPrint");
+}
 
-	//genLists.open ("genLists.txt", std::ofstream::out | std::ofstream::app);
+void GENSIMAnalysis::beginJob()
+{
+	std::cout<<"GENSIMAnalysis beginJob()..."<<std::endl;
+	numEvts_=0;
 	genLists.open ("genLists.txt", std::ofstream::out );
 
 	h_numEvt           = tFileService->make<TH1D>("Num_Evt", "",  1, 1, 2);
@@ -64,36 +70,60 @@ GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 	h_ustarStatus      = tFileService->make<TH1D>("Ustar_Status", "", 600, -300, 300);
 }
 
-GENSIMAnalysis::~GENSIMAnalysis()
+// ------------ My functions  ------------
+void GENSIMAnalysis::fillUstarInfo( const reco::GenParticle* gen, int& nustar_p, int& nustar_a, int& nQstar )
 {
-	// do anything here that needs to be done at desctruction time
-	// (e.g. close files, deallocate resources etc.)
+	if(fabs(gen->pdgId())== 4000002 ){
+		if( gen->pdgId() == 4000002 ) nustar_p++;
+		else nustar_a--;
+		h_mustar->Fill(gen->mass());
+		h_pTustar->Fill(gen->pt());
+		h_etaustar->Fill(gen->eta());
+		h_phiustar->Fill(gen->phi());
+		h_ustarStatus->Fill(gen->status());
+		for( unsigned int iDa=0; iDa<gen->numberOfDaughters(); iDa++ ){
+			h_ustarDecay->Fill(gen->daughter(iDa)->pdgId());				
+		}
+	}
+	nQstar++;
 }
-
-//
-// member functions
-//
-
+void GENSIMAnalysis::fillDstarInfo( const reco::GenParticle* gen, int& ndstar_p, int& ndstar_a, int& nQstar )
+{
+	if(fabs(gen->pdgId())== 4000001 ){
+		if( gen->pdgId() == 4000001 ) ndstar_p++;
+		else ndstar_a--;
+		h_mdstar->Fill(gen->mass());
+		h_pTdstar->Fill(gen->pt());
+		h_etadstar->Fill(gen->eta());
+		h_phidstar->Fill(gen->phi());
+		h_dstarStatus->Fill(gen->status());
+		for( unsigned int iDa=0; iDa<gen->numberOfDaughters(); iDa++ ){
+			h_dstarDecay->Fill(gen->daughter(iDa)->pdgId());				
+		}
+	}
+	nQstar++;
+}
 // ------------ method called for each event  ------------
 void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+	std::cout<<"GENSIMAnalysis analyze() in Event: "<<numEvts_<<std::endl;
 	using namespace edm;
 	using namespace std;
 
 	//Handle objects
 	edm::Handle<std::vector<reco::GenParticle>> genParticles;
-	iEvent.getByLabel("genParticles", genParticles);
+	iEvent.getByLabel(genInfoLabel_, genParticles);
 
 	int nQstar, ndstar_p, ndstar_a, nustar_p, nustar_a;
 	nQstar=ndstar_p=ndstar_a=nustar_p=nustar_a=0;
 
-	if( numEvts_ <= printEvts_ ){ 
+	if( numEvts_ <= numEventListsPrint_ ){ 
 		genLists<<"\n=========================================="<<endl;	
 		genLists<<"Event: "<<numEvts_<<endl;	
 	}
 	for (reco::GenParticleCollection::const_iterator itGen=genParticles->begin(); itGen!=genParticles->end(); ++itGen){
 		//** Print out particel decay lists
-		if( numEvts_ <= printEvts_ ){
+		if( numEvts_ <= numEventListsPrint_ ){
 			genLists<<"\n\t\t"
 				<<"PdgID\t"
 				<<"Status\t"
@@ -136,31 +166,15 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		}
 		//** Fill histogram
 		h_pdgId->Fill(itGen->pdgId());
-		if( itGen->pdgId() ==  4000001 && itGen->status() == 62 ){ ndstar_p++; nQstar++; }
-		if( itGen->pdgId() == -4000001 && itGen->status() == 62 ){ ndstar_a--; nQstar++; }
-		if( itGen->pdgId() ==  4000002 && itGen->status() == 62 ){ nustar_p++; nQstar++; }
-		if( itGen->pdgId() == -4000002 && itGen->status() == 62 ){ nustar_a--; nQstar++; }
 
-		if(fabs(itGen->pdgId())== 4000001 && itGen->status() == 62 ){
-			h_mdstar->Fill(itGen->mass());
-			h_pTdstar->Fill(itGen->pt());
-			h_etadstar->Fill(itGen->eta());
-			h_phidstar->Fill(itGen->phi());
-			h_dstarStatus->Fill(itGen->status());
-			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
-				h_dstarDecay->Fill(itGen->daughter(iDa)->pdgId());				
-			}
+		if( selectQstarStatus_ == -1 ){
+			fillUstarInfo( &(*itGen), nustar_p, nustar_a, nQstar );
+			fillDstarInfo( &(*itGen), ndstar_p, ndstar_a, nQstar );
+		}else if( itGen->status() == selectQstarStatus_ ){
+			fillUstarInfo( &(*itGen), nustar_p, nustar_a, nQstar );
+			fillDstarInfo( &(*itGen), ndstar_p, ndstar_a, nQstar );
 		}
-		if(fabs(itGen->pdgId())== 4000002 && itGen->status() == 62 ){
-			h_mustar->Fill(itGen->mass());
-			h_pTustar->Fill(itGen->pt());
-			h_etaustar->Fill(itGen->eta());
-			h_phiustar->Fill(itGen->phi());
-			h_ustarStatus->Fill(itGen->status());
-			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
-				h_ustarDecay->Fill(itGen->daughter(iDa)->pdgId());				
-			}
-		}
+
 	}
 	if( ndstar_p != 0 ) h_ndstar->Fill(ndstar_p);
 	if( ndstar_a != 0 ) h_ndstar->Fill(ndstar_a);
@@ -171,12 +185,11 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	numEvts_++;
 }
 
-
-// ------------ method called once each job just before starting event loop  ------------
-void GENSIMAnalysis::beginJob()
+GENSIMAnalysis::~GENSIMAnalysis()
 {
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 }
-
 // ------------ method called once each job just after ending the event loop  ------------
 void GENSIMAnalysis::endJob() 
 {
