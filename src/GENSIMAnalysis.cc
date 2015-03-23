@@ -134,21 +134,33 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 			float m0, m1; m0=m1=-1;
 			if( itGen->numberOfMothers() == 1 ){ 
 				m0=itGen->mother(0)->pdgId(); 
-			}else if( itGen->numberOfMothers() > 1 ){ 
+			}else if( itGen->numberOfMothers() > 1){ 
 				m0=itGen->mother(0)->pdgId(); 
 				m1=itGen->mother(1)->pdgId(); 
 			}	
 			fprintf(genLists, "\n%5s\t%8s%8s%3s%7s%8s%7s%2s%8s%11s%8s%2s\n", "idx", "ID", "Stat", "|", "M0", "M1", "nDa", "|", "pT", "eta", "phi", "|");	
 			fprintf(genLists, "%5.0f\t%8.0f%8.0f%3s%7.0f%8.0f%7.0f%2s%8.3f%11.3f%8.3f%2s\n", iGen, pdgId, status, "|", m0, m1, numDau, "|", pT, eta, phi, "|");
 			fprintf(genLists, "%5s\n", ",  " );	
-			// Daughter paticles	
-			for( unsigned int iDa=0; iDa<itGen->numberOfDaughters(); iDa++ ){
-				float dauId     = itGen->daughter(iDa)->pdgId();
-				float dauStatus = itGen->daughter(iDa)->status();
-				if( iDa < (itGen->numberOfDaughters()-1)){ 
-					fprintf(genLists, "%5s\t%8.0f%8.0f%3s\n", "|->", dauId, dauStatus, "|");
+			// Daughter paticles
+			for( unsigned int iDa=0; iDa<numDau; iDa++ ){
+				const reco::Candidate* dau = itGen->daughter(iDa);	
+				float dau_pT  = dau->pt();
+				float dau_eta = dau->eta();
+				float dau_phi = dau->phi();
+				float dau_Id     = dau->pdgId();
+				float dau_Status = dau->status();
+				float dau_numDau = dau->numberOfDaughters();
+				float dau_m0, dau_m1; dau_m0=dau_m1=-1;
+				if( dau->numberOfMothers() == 1 ){ 
+					dau_m0=dau->mother(0)->pdgId(); 
+				}else if( dau->numberOfMothers() > 1 ){ 
+					dau_m0=dau->mother(0)->pdgId(); 
+					dau_m1=dau->mother(1)->pdgId(); 
+				}	
+				if( iDa < numDau-1){ 
+					fprintf(genLists, "%5s\t%8.0f%8.0f%3s%7.0f%8.0f%7.0f%2s%8.3f%11.3f%8.3f%2s\n", "|->", dau_Id, dau_Status, "|", dau_m0, dau_m1, dau_numDau, "|", dau_pT, dau_eta, dau_phi, "|" );
 				}else{ 
-					fprintf(genLists, "%5s\t%8.0f%8.0f%3s\n", "`->", dauId, dauStatus, "|");
+					fprintf(genLists, "%5s\t%8.0f%8.0f%3s%7.0f%8.0f%7.0f%2s%8.3f%11.3f%8.3f%2s\n", "`->", dau_Id, dau_Status, "|", dau_m0, dau_m1, dau_numDau, "|", dau_pT, dau_eta, dau_phi, "|" );
 				}
 			}
 			fprintf(genLists, "--------------------------------------------------------------------------------");	
