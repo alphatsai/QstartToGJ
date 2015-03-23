@@ -132,7 +132,7 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 			float pdgId  = itGen->pdgId();
 			float status = itGen->status();
 			float numDau = itGen->numberOfDaughters();
-			float m0, m1; m0=m1=-1;
+			float m0, m1; m0=m1=0;
 			if( itGen->numberOfMothers() == 1 ){ 
 				m0=itGen->mother(0)->pdgId(); 
 			}else if( itGen->numberOfMothers() > 1){ 
@@ -151,7 +151,7 @@ void GENSIMAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 				float dau_Id     = dau->pdgId();
 				float dau_Status = dau->status();
 				float dau_numDau = dau->numberOfDaughters();
-				float dau_m0, dau_m1; dau_m0=dau_m1=-1;
+				float dau_m0, dau_m1; dau_m0=dau_m1=0;
 				if( dau->numberOfMothers() == 1 ){ 
 					dau_m0=dau->mother(0)->pdgId(); 
 				}else if( dau->numberOfMothers() > 1 ){ 
