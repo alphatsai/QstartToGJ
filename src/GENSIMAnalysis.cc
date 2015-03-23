@@ -40,8 +40,9 @@
 GENSIMAnalysis::GENSIMAnalysis(const edm::ParameterSet& iConfig)
 {
 	std::cout<<"GENSIMAnalysis constructor..."<<std::endl;
-	genInfoLabel_ = iConfig.getParameter<edm::InputTag>("genInfoLabel");	
-	selectQstarStatus_ = iConfig.getParameter<int>("selectQstarStatus");	
+	genInfoLabel_   = iConfig.getParameter<edm::InputTag>("genInfoLabel");	
+	outputFileName_ = iConfig.getParameter<std::string>("outputFileName");
+	selectQstarStatus_  = iConfig.getParameter<int>("selectQstarStatus");	
 	numEventListsPrint_ = iConfig.getParameter<int>("numEventListsPrint");
 }
 
@@ -49,7 +50,7 @@ void GENSIMAnalysis::beginJob()
 {
 	std::cout<<"GENSIMAnalysis beginJob()..."<<std::endl;
 	numEvts_=0;
-	genLists = fopen("genLists.txt","w");
+	genLists = fopen((outputFileName_+"_genLists.txt").c_str(), "w");
 
 	h_numEvt           = tFileService->make<TH1D>("Num_Evt", "",  1, 1, 2);
 	h_pdgId            = tFileService->make<TH1D>("PdgId", "",   100, -50, 50);

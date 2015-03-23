@@ -21,7 +21,7 @@ options.register('inputFileName', 'FileNames',
 	VarParsing.varType.string,
 	"input File name"
 	)
-options.register('outputFileName', 'GENSIMAnalysis.root',
+options.register('outputFileName', 'GENSIMAnalysis',
 	VarParsing.multiplicity.singleton,
 	VarParsing.varType.string,
 	"Output File name"
@@ -69,12 +69,13 @@ process.source = cms.Source("PoolSource",
 
 ### output
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string(options.outputFileName) 
+    fileName = cms.string((options.outputFileName+'.root')) 
 )
 
 ### Input parameters
 process.GENSIMAnalysis = cms.EDAnalyzer('GENSIMAnalysis',
 	genInfoLabel       = cms.InputTag(options.genInfoLabel),
+	outputFileName	   = cms.string(options.outputFileName),
 	selectQstarStatus  = cms.int32(options.selectQstarStatus),
 	numEventListsPrint = cms.int32(options.numEventListsPrint),
 )

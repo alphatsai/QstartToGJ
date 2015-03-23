@@ -60,6 +60,7 @@ class GENSIMAnalysis : public edm::EDAnalyzer {
 
 		// ----------member data ---------------------------
 		edm::InputTag genInfoLabel_;
+		std::string outputFileName_;
 		int selectQstarStatus_;
 		int numEventListsPrint_;
 
