@@ -8,7 +8,6 @@ process = cms.Process("GENSIMAnalysis")
 
 #process.GlobalTag.globaltag = 'MCRUN2_74_V1::All'  #https://twiki.cern.ch/twiki/bin/viewauth/CMS/RelValGT
 
-
 # Default Parameter options
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
@@ -17,7 +16,12 @@ options.register('maxEvts', -1,
 	VarParsing.varType.int,
 	"Run events max"
 	)
-options.register('outFilename', 'GENSIMAnalysis.root',
+options.register('inputFileName', 'FileNames',
+	VarParsing.multiplicity.singleton,
+	VarParsing.varType.string,
+	"input File name"
+	)
+options.register('outputFileName', 'GENSIMAnalysis.root',
 	VarParsing.multiplicity.singleton,
 	VarParsing.varType.string,
 	"Output File name"
@@ -48,17 +52,24 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 
 ### input
 from inputFiles_cfi import * #FileNames 
+
+print 'NOTE: Using filename from inputFiles.py: '+options.inputFileName
+if options.inputFileName == 'FileNames':
+	InputFiles = FileNames
+elif options.inputFileName == 'FileNames_QstarM500_100K':
+	InputFiles = FileNames_QstarM500_100K
+elif options.inputFileName == 'FileNames_QstarM500_TSchanel_100K':
+	InputFiles = FileNames_QstarM500_TSchanel_100K
+
 process.source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(InputFiles)
     #skipEvents = cms.untracked.uint32(0),
     #firstEvent = cms.untracked.uint32(1),
-    #fileNames = cms.untracked.vstring(FileNames_test)
-    fileNames = cms.untracked.vstring(FileNames_QstarM500_100K)
-    #fileNames = cms.untracked.vstring(FileNames_QstarM500_TSchanel_100K)
 )
 
 ### output
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string(options.outFilename) 
+    fileName = cms.string(options.outputFileName) 
 )
 
 ### Input parameters
